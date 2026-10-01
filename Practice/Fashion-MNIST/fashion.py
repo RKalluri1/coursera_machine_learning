@@ -38,41 +38,66 @@ def load_fashion_data():
     return X_train, X_val, X_test, y_train, y_val, y_test
 
 
-def get_model_error_rate(model, X, y):
-    logits = model.predict(X)
+class VerySimpleFashionModel(keras.Sequential):
+    def __init__(self):
+        # Define the model
+        super().__init__([
+            Input(shape=(784,)),
+            Dense(32, activation='relu',   name='L1'),
+            Dense(10, activation='linear', name='L2')
+        ])
+
+    def build_model(self, X, y):
+        # Compile the model
+        super().compile(optimizer=Adam(0.001), loss=SparseCategoricalCrossentropy(from_logits=True))
+
+        # Train the model
+        super().fit(x = X, y = y, epochs=10, verbose=1)
+
+    def __str__(self):
+        return 'VerySimpleFashionModel'
+
+
+class SimpleFashionModel(keras.Sequential):
+    def __init__(self):
+        # Define the model
+        super().__init__([
+            Input(shape=(784,)),
+            Dense(128, activation='relu',   name='L1'),
+            Dense(64, activation='relu',   name='L2'),
+            Dense(10, activation='linear', name='L3')
+        ])
+
+    def build_model(self, X, y):
+        # Compile the model
+        super().compile(optimizer=Adam(0.001), loss=SparseCategoricalCrossentropy(from_logits=True))
+
+        # Train the model
+        super().fit(x = X, y = y, epochs=10, verbose=1)
+
+    def __str__(self):
+        return 'SimpleFashionModel'
+
+
+def print_error_rate(model, X, y, set_name):
+    logits = model.predict(X, verbose=0)
     pred = np.argmax(logits, axis=1)
     errs = np.sum(pred != y)
     count = len(y)
-    return Fraction(errs, count)
+    print(f"{str(model)} {set_name} error rate = {errs}/{count} = {100 * errs / count:0.3}%")
 
 
-def define_and_train_model(X, y):
-    # Define the model
-    model = Sequential([
-                Input(shape=(784,)),
-                Dense(32, activation='relu'  , name='L1'),
-                Dense(10, activation='linear', name='L2')
-            ])
-
-    # Compile the model
-    model.compile(optimizer=Adam(0.001), loss=SparseCategoricalCrossentropy(from_logits=True))
-
-    # Train the model
-    model.fit(x = X, y = y, epochs=10, verbose=1)
-
-    return model
+def fit_and_run(model_reference, X_train, y_train, X_val, y_val, X_test, y_test):
+    m = model_reference()
+    m.build_model(X_train, y_train)
+    print_error_rate(m, X_train, y_train, "training")
+    print_error_rate(m, X_val, y_val, "validation")
+    print_error_rate(m, X_test, y_test, "test")
 
 
 X_train, X_val, X_test, y_train, y_val, y_test = load_fashion_data()
-
-model = define_and_train_model(X_train, y_train)
-
-train_err = get_model_error_rate(model, X_train, y_train)
-print(f"training error rate = {str(train_err)} = {100 * float(train_err):0.3}%")
-
-test_err = get_model_error_rate(model, X_test, y_test)
-print(f"test error rate = {str(test_err)} = {100 * float(test_err):0.3}%")
-
-val_err = get_model_error_rate(model, X_val, y_val)
-print(f"validation error rate = {str(val_err)} = {100 * float(val_err):0.3}%")
+print('--------------------')
+fit_and_run(VerySimpleFashionModel, X_train, y_train, X_val, y_val, X_test, y_test)
+print('--------------------')
+fit_and_run(SimpleFashionModel, X_train, y_train, X_val, y_val, X_test, y_test)
 

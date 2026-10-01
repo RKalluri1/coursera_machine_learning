@@ -1,7 +1,8 @@
 #!/usr/bin/env -S uv run --script
 
-import tensorflow.keras as keras
-import numpy            as np
+import tensorflow.keras  as keras
+import numpy             as np
+import matplotlib.pyplot as plt
 
 from keras            import Sequential
 from keras.optimizers import Adam
@@ -47,12 +48,12 @@ class VerySimpleFashionModel(keras.Sequential):
             Dense(10, activation='linear', name='L2')
         ])
 
-    def build_model(self, X, y):
+    def build_model(self, X, y, Xv, yv):
         # Compile the model
         super().compile(optimizer=Adam(0.001), loss=SparseCategoricalCrossentropy(from_logits=True))
 
         # Train the model
-        super().fit(x = X, y = y, epochs=10, verbose=1)
+        return super().fit(x = X, y = y, epochs=10, verbose=1, validation_data = (Xv, yv))
 
     def __str__(self):
         return 'VerySimpleFashionModel'
@@ -63,17 +64,17 @@ class SimpleFashionModel(keras.Sequential):
         # Define the model
         super().__init__([
             Input(shape=(784,)),
-            Dense(128, activation='relu',   name='L1'),
+            Dense(128, activation='relu',  name='L1'),
             Dense(64, activation='relu',   name='L2'),
             Dense(10, activation='linear', name='L3')
         ])
 
-    def build_model(self, X, y):
+    def build_model(self, X, y, Xv, yv):
         # Compile the model
         super().compile(optimizer=Adam(0.001), loss=SparseCategoricalCrossentropy(from_logits=True))
 
         # Train the model
-        super().fit(x = X, y = y, epochs=10, verbose=1)
+        return super().fit(x = X, y = y, epochs=10, verbose=1, validation_data = (Xv, yv))
 
     def __str__(self):
         return 'SimpleFashionModel'
@@ -84,15 +85,24 @@ def print_error_rate(model, X, y, set_name):
     pred = np.argmax(logits, axis=1)
     errs = np.sum(pred != y)
     count = len(y)
-    print(f"{str(model)} {set_name} error rate = {errs}/{count} = {100 * errs / count:0.3}%")
+    print(f"{str(model)} {set_name} error rate = {errs}/{count} = {100 * errs / count:5.3}%")
 
 
 def fit_and_run(model_reference, X_train, y_train, X_val, y_val, X_test, y_test):
     m = model_reference()
-    m.build_model(X_train, y_train)
+    history = m.build_model(X_train, y_train, X_val, y_val)
     print_error_rate(m, X_train, y_train, "training")
     print_error_rate(m, X_val, y_val, "validation")
     print_error_rate(m, X_test, y_test, "test")
+
+    plt.plot(history.history["loss"], label="train")
+    plt.plot(history.history["val_loss"], label="validation")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.legend()
+
+    pltfname = f"{str(m)}_learning_curves.png"
+    plt.savefig(pltfname, dpi=150, bbox_inches="tight")
 
 
 X_train, X_val, X_test, y_train, y_val, y_test = load_fashion_data()

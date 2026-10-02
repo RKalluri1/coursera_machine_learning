@@ -103,6 +103,7 @@ def fit_and_run(model_reference, X_train, y_train, X_val, y_val, X_test, y_test)
 
     pltfname = f"{str(m)}_learning_curves.png"
     plt.savefig(pltfname, dpi=150, bbox_inches="tight")
+    plt.close()
 
 
 X_train, X_val, X_test, y_train, y_val, y_test = load_fashion_data()

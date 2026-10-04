@@ -13,6 +13,14 @@ performance of 88.2% for VerySimpleFashionModel, and 88.6% for SimpleFashionMode
 
 The learning curves are below:
 
-![VerySimpleFashionModel](VerySimpleFashionModel_learning_curves.png)
-![SimpleFashionModel](SimpleFashionModel_learning_curves.png)
+<div align="center">
+  <img src="VerySimpleFashionModel_learning_curves.png">
+  <br />
+  <p><b><font size += 4>Very Simple Fashion Model</font></b></p>
+</div>
+
+<div align="center">
+  <img src="SimpleFashionModel_learning_curves.png">
+  <p><b><font size+=4>Simple Fashion Model</font></b></p>
+</div>
 
